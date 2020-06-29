@@ -267,8 +267,11 @@ export default {
 			this.newSubboardName = ''
 		},
 		saveSubboard(e){
-			alert("GUARDANDO")
-			console.log(this.newSubboardName)
+			this.$store.dispatch('createSubBoard', {
+				title: this.newSubboardName,
+				color: '000000',
+				parent: this.board.id
+			})
 			this.cancelAddNewSubboard()
 		},
 		showSidebar() {

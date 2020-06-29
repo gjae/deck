@@ -1,6 +1,7 @@
 /*
  * @copyright Copyright (c) 2018 Michael Weimann <mail@michael-weimann.eu>
- *
+ * @copyright Copyright (c) 2020 Giovanny Avila <gjavilae@gmail.com>
+ * 
  * @author Michael Weimann <mail@michael-weimann.eu>
  *
  * @license GNU AGPL version 3 or any later version
@@ -65,8 +66,8 @@ export class BoardApi {
 	 *        color the hexadecimal color value formated /[0-9A-F]{6}/i
 	 * @returns {Promise}
 	 */
-	createBoard(boardData) {
-		return axios.post(this.url('/boards'), boardData)
+	createBoard(boardData, url = '/boards') {
+		return axios.post(this.url(url), boardData)
 			.then(
 				(response) => {
 					return Promise.resolve(response.data)
@@ -78,6 +79,10 @@ export class BoardApi {
 			.catch((err) => {
 				return Promise.reject(err)
 			})
+	}
+
+	createSubBoard(boardData) {
+		return this.createBoard(boardData, '/sub/boards')
 	}
 
 	deleteBoard(board) {

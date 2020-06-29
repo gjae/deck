@@ -1,5 +1,6 @@
 /*
  * @copyright Copyright (c) 2018 Julius Härtl <jus@bitgrid.net>
+ * @copyright Copyright (c) 2020 Giovanny Avila <gjavilae@gmail.com>
  *
  * @author Julius Härtl <jus@bitgrid.net>
  *
@@ -320,6 +321,12 @@ export default new Vuex.Store({
 		createBoard({ commit }, boardData) {
 			apiClient.createBoard(boardData)
 				.then((board) => {
+					commit('addBoard', board)
+				})
+		},
+		createSubBoard({ commit }, board) {
+			apiClient.createSubBoard(board)
+				.then( (board)=> {
 					commit('addBoard', board)
 				})
 		},

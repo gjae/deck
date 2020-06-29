@@ -1,6 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2016 Julius Härtl <jus@bitgrid.net>
+ * @copyright Copyright (c) 2020 Giovanny Avila <gjavilae@gmail.com>
  *
  * @author Julius Härtl <jus@bitgrid.net>
  *
@@ -44,9 +45,11 @@ class BoardMapper extends DeckMapper implements IPermissionMapper {
 		AclMapper $aclMapper,
 		StackMapper $stackMapper,
 		IUserManager $userManager,
-		IGroupManager $groupManager
+		IGroupManager $groupManager,
+		$board_class = Board::class,
+		$tableName = 'deck_boards'
 	) {
-		parent::__construct($db, 'deck_boards', Board::class);
+		parent::__construct($db, $tableName, $board_class);
 		$this->labelMapper = $labelMapper;
 		$this->aclMapper = $aclMapper;
 		$this->stackMapper = $stackMapper;

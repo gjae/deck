@@ -1,6 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2016 Julius Härtl <jus@bitgrid.net>
+ * @copyright Copyright (c) 2020 Giovanny Avila <gjavilae@gmail.com>
  *
  * @author Julius Härtl <jus@bitgrid.net>
  * @author Ryan Fletcher <ryan.fletcher@codepassion.ca>
@@ -41,6 +42,9 @@ return [
 		['name' => 'board#updateAcl', 'url' => '/boards/{boardId}/acl/{aclId}', 'verb' => 'PUT'],
 		['name' => 'board#deleteAcl', 'url' => '/boards/{boardId}/acl/{aclId}', 'verb' => 'DELETE'],
 		['name' => 'board#clone', 'url' => '/boards/{boardId}/clone', 'verb' => 'POST'],
+
+		// subboard	
+		['name' => 'sub_board#create', 'url' => '/sub/boards', 'verb' => 'POST'],
 
 		// stacks
 		['name' => 'stack#index', 'url' => '/stacks/{boardId}', 'verb' => 'GET'],
@@ -91,8 +95,10 @@ return [
 		['name' => 'board_api#addAcl', 'url' => '/api/v1.0/boards/{boardId}/acl', 'verb' => 'POST'],
 		['name' => 'board_api#deleteAcl', 'url' => '/api/v1.0/boards/{boardId}/acl/{aclId}', 'verb' => 'DELETE'],
 		['name' => 'board_api#updateAcl', 'url' => '/api/v1.0/boards/{boardId}/acl/{aclId}', 'verb' => 'PUT'],
-
-
+		
+		// sub-boards
+		['name' => 'sub_board_api#create', 'url' => 'api/v1.0/sub/boards', 'verb' => 'POST'],
+		
 		['name' => 'stack_api#index', 'url' => '/api/v1.0/boards/{boardId}/stacks', 'verb' => 'GET'],
 		['name' => 'stack_api#getArchived', 'url' => '/api/v1.0/boards/{boardId}/stacks/archived', 'verb' => 'GET'],
 		['name' => 'stack_api#get', 'url' => '/api/v1.0/boards/{boardId}/stacks/{stackId}', 'verb' => 'GET'],
