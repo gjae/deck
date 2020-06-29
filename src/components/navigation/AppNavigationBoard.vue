@@ -1,6 +1,7 @@
 <!--
   - @copyright Copyright (c) 2018 John Molakvoæ <skjnldsv@protonmail.com>
-  -
+  - @copyright Copyright (c) 2020 Giovanny Avila <gjavilae@gmail.com>
+
   - @author John Molakvoæ <skjnldsv@protonmail.com>
   -
   - @license GNU AGPL version 3 or any later version
@@ -20,64 +21,94 @@
   -
   -->
 <template>
-	<AppNavigationItem v-if="!editing"
-		:title="!deleted ? board.title : undoText"
-		:loading="loading"
-		:to="routeTo"
-		:undo="deleted"
-		@undo="unDelete">
-		<AppNavigationIconBullet slot="icon" :color="board.color" />
+	<div>
+		<AppNavigationItem v-if="!editing"
+			:title="!deleted ? board.title : undoText"
+			:loading="loading"
+			:to="routeTo"
+			:undo="deleted"
+			@undo="unDelete">
+			<AppNavigationIconBullet slot="icon" :color="board.color" />
 
-		<AppNavigationCounter v-if="board.acl.length"
-			slot="counter"
-			class="icon-shared"
-			style="opacity: 0.5" />
+			<AppNavigationCounter v-if="board.acl.length"
+				slot="counter"
+				class="icon-shared"
+				style="opacity: 0.5" />
 
-		<template v-if="!deleted" slot="actions">
-			<ActionButton v-if="canManage && !board.archived"
-				icon="icon-rename"
-				:close-after-click="true"
-				@click="actionEdit">
-				{{ t('deck', 'Edit board') }}
-			</ActionButton>
-			<ActionButton v-if="canManage && !board.archived"
-				icon="icon-clone"
-				:close-after-click="true"
-				@click="actionClone">
-				{{ t('deck', 'Clone board ') }}
-			</ActionButton>
-			<ActionButton v-if="canManage && board.archived"
-				icon="icon-archive"
-				:close-after-click="true"
-				@click="actionUnarchive">
-				{{ t('deck', 'Unarchive board ') }}
-			</ActionButton>
-			<ActionButton v-if="canManage && !board.archived"
-				icon="icon-archive"
-				:close-after-click="true"
-				@click="actionArchive">
-				{{ t('deck', 'Archive board ') }}
-			</ActionButton>
-			<ActionButton v-if="canManage"
-				icon="icon-delete"
-				:close-after-click="true"
-				@click="actionDelete">
-				{{ t('deck', 'Delete board ') }}
-			</ActionButton>
-			<ActionButton icon="icon-more" :close-after-click="true" @click="actionDetails">
-				{{ t('deck', 'Board details') }}
-			</ActionButton>
-		</template>
-	</AppNavigationItem>
-	<div v-else-if="editing" class="board-edit">
-		<ColorPicker class="app-navigation-entry-bullet-wrapper" :value="`#${board.color}`" @input="updateColor">
-			<div :style="{ backgroundColor: getColor }" class="color0 icon-colorpicker app-navigation-entry-bullet" />
-		</ColorPicker>
-		<form @submit.prevent.stop="applyEdit">
-			<input v-model="editTitle" type="text" required>
-			<input type="submit" value="" class="icon-confirm">
-			<Actions><ActionButton icon="icon-close" @click.stop.prevent="cancelEdit" /></Actions>
-		</form>
+			<template v-if="!deleted" slot="actions">
+				<ActionButton v-if="canManage && !board.archived"
+					icon="icon-rename"
+					:close-after-click="true"
+					@click="actionEdit">
+					{{ t('deck', 'Edit board') }}
+				</ActionButton>
+				<ActionButton v-if="canManage && !board.archived"
+					icon="icon-clone"
+					:close-after-click="true"
+					@click="actionClone">
+					{{ t('deck', 'Clone board ') }}
+				</ActionButton>
+				<ActionButton v-if="canManage && board.archived"
+					icon="icon-archive"
+					:close-after-click="true"
+					@click="actionUnarchive">
+					{{ t('deck', 'Unarchive board ') }}
+				</ActionButton>
+				<ActionButton v-if="canManage && !board.archived"
+					icon="icon-archive"
+					:close-after-click="true"
+					@click="actionArchive">
+					{{ t('deck', 'Archive board ') }}
+				</ActionButton>
+				<ActionButton v-if="canManage"
+					icon="icon-delete"
+					:close-after-click="true"
+					@click="actionDelete">
+					{{ t('deck', 'Delete board ') }}
+				</ActionButton>
+				<ActionButton
+					v-if="canManage"
+					:close-after-click="true"
+					icon="icon-add"
+					@click="actionNewSubboard">
+					{{  t('deck', 'Add new sub-board')  }}
+				</ActionButton>
+				<ActionButton icon="icon-more" :close-after-click="true" @click="actionDetails">
+					{{ t('deck', 'Board details') }}
+				</ActionButton>
+			</template>
+		</AppNavigationItem>
+		<div v-else-if="editing" class="board-edit">
+			<ColorPicker class="app-navigation-entry-bullet-wrapper" :value="`#${board.color}`" @input="updateColor">
+				<div :style="{ backgroundColor: getColor }" class="color0 icon-colorpicker app-navigation-entry-bullet" />
+			</ColorPicker>
+			<form @submit.prevent.stop="applyEdit">
+				<input v-model="editTitle" type="text" required>
+				<input type="submit" value="" class="icon-confirm">
+				<Actions><ActionButton icon="icon-close" @click.stop.prevent="cancelEdit" /></Actions>
+			</form>
+		</div>
+		<div
+			:close-after-submit="true"
+			v-show="enableNewSubboardForm"
+			class="board-edit"
+			:style="{
+				marginLeft: 65,
+			}"
+		>
+			<form @submit.prevent.stop="saveSubboard">
+				<input 
+					v-model="newSubboardName"  
+					:placeholder="t('deck', 'New board title')" 
+					type="text" required />
+				<input type="submit" value="" class="icon-confirm">
+				<Actions>
+					<ActionButton 
+						icon="icon-close" 
+						@click.stop.prevent="cancelAddNewSubboard" />
+					</Actions>
+			</form>
+		</div>
 	</div>
 </template>
 
@@ -114,6 +145,8 @@ export default {
 			undoTimeoutHandle: null,
 			editTitle: '',
 			editColor: '',
+			enableNewSubboardForm: false,
+			newSubboardName: '',
 		}
 	},
 	computed: {
@@ -204,6 +237,10 @@ export default {
 				true
 			)
 		},
+		actionNewSubboard(board_id = null)	{
+			this.enableNewSubboardForm = true;
+			console.log("Enable subboard");
+		},
 		actionDetails() {
 			const route = this.routeTo
 			route.name = 'board.details'
@@ -224,6 +261,15 @@ export default {
 		},
 		cancelEdit(e) {
 			this.editing = false
+		},
+		cancelAddNewSubboard(e){
+			this.enableNewSubboardForm = false
+			this.newSubboardName = ''
+		},
+		saveSubboard(e){
+			alert("GUARDANDO")
+			console.log(this.newSubboardName)
+			this.cancelAddNewSubboard()
 		},
 		showSidebar() {
 			const route = this.routeTo
