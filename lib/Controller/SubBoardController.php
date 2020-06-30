@@ -49,8 +49,17 @@ class SubBoardController extends BoardController {
 	 * @param $color
 	 * @return \OCP\AppFramework\Db\Entity
 	 */
-	public function create($title, $color, $parent) {
-		return $this->boardService->create($title, $this->userId, $color, $parent);
-	}
+	public function create($title, $color, $parent = null) {
+        return $this->boardService->create($title, $this->userId, $color, $parent);
+            
+    }
 
+    /**
+     * @NoAdminRequired
+     * @param $parent
+     */
+    public function index($parent = null) {
+        return $this->boardService->findAll();
+    }
+    
 }

@@ -44,7 +44,7 @@ class SubboardMapper extends BoardMapper {
 			$db, $labelMapper , $aclMapper, $stackMapper, 
 			$userManager,$groupManager, $board_class, 'deck_boards'
 		);
-        
+
 		$this->labelMapper = $labelMapper;
 		$this->aclMapper = $aclMapper;
 		$this->stackMapper = $stackMapper;
@@ -53,6 +53,5 @@ class SubboardMapper extends BoardMapper {
 
 		$this->circlesEnabled = \OC::$server->getAppManager()->isEnabledForUser('circles');
 	}
-
 
 }

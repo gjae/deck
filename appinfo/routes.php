@@ -31,7 +31,7 @@ return [
 		['name' => 'Config#setValue', 'url' => '/config/{key}', 'verb' => 'POST'],
 
 		// boards
-		['name' => 'board#index', 'url' => '/boards', 'verb' => 'GET'],
+		['name' => 'sub_board#index', 'url' => '/boards', 'verb' => 'GET', 'default' => ['parent' => null] ],
 		['name' => 'board#create', 'url' => '/boards', 'verb' => 'POST'],
 		['name' => 'board#read', 'url' => '/boards/{boardId}', 'verb' => 'GET'],
 		['name' => 'board#update', 'url' => '/boards/{boardId}', 'verb' => 'PUT'],

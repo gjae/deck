@@ -28,6 +28,8 @@ namespace OCA\Deck\Db;
 class Subboard extends Board {
     protected $belongs_board_id;
 
+    protected $belongsBoardId;
+
     public function __construct() {
         parent::__construct();
         $this->addType('belongs_board_id', 'integer');

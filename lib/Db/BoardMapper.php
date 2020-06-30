@@ -97,8 +97,8 @@ class BoardMapper extends DeckMapper implements IPermissionMapper {
 	 * @return array
 	 */
 	public function findAllByUser($userId, $limit = null, $offset = null, $since = -1) {
-		$sql = 'SELECT id, title, owner, color, archived, deleted_at, 0 as shared, last_modified FROM `*PREFIX*deck_boards` WHERE owner = ? AND last_modified > ? UNION ' .
-			'SELECT boards.id, title, owner, color, archived, deleted_at, 1 as shared, last_modified FROM `*PREFIX*deck_boards` as boards ' .
+		$sql = 'SELECT id, title, owner, color, archived, deleted_at, 0 as shared, last_modified, belongs_board_id FROM `*PREFIX*deck_boards` WHERE owner = ? AND last_modified > ? UNION ' .
+			'SELECT boards.id, title, owner, color, archived, deleted_at, 1 as shared, last_modified, belongs_board_id FROM `*PREFIX*deck_boards` as boards ' .
 			'JOIN `*PREFIX*deck_board_acl` as acl ON boards.id=acl.board_id WHERE acl.participant=? AND acl.type=? AND boards.owner != ? AND last_modified > ?';
 		$entries = $this->findEntities($sql, [$userId, $since, $userId, Acl::PERMISSION_TYPE_USER, $userId, $since], $limit, $offset);
 		/* @var Board $entry */
@@ -106,6 +106,7 @@ class BoardMapper extends DeckMapper implements IPermissionMapper {
 			$acl = $this->aclMapper->findAll($entry->id);
 			$entry->setAcl($acl);
 		}
+		
 		return $entries;
 	}
 
@@ -127,7 +128,7 @@ class BoardMapper extends DeckMapper implements IPermissionMapper {
 		if (count($groups) <= 0) {
 			return [];
 		}
-		$sql = 'SELECT boards.id, title, owner, color, archived, deleted_at, 2 as shared, last_modified FROM `*PREFIX*deck_boards` as boards ' .
+		$sql = 'SELECT boards.id, title, owner, color, archived, deleted_at, 2 as shared, last_modified, belongs_board_id FROM `*PREFIX*deck_boards` as boards ' .
 			'INNER JOIN `*PREFIX*deck_board_acl` as acl ON boards.id=acl.board_id WHERE owner != ? AND type=? AND (';
 		for ($i = 0, $iMax = count($groups); $i < $iMax; $i++) {
 			$sql .= 'acl.participant = ? ';
@@ -156,7 +157,7 @@ class BoardMapper extends DeckMapper implements IPermissionMapper {
 			return [];
 		}
 
-		$sql = 'SELECT boards.id, title, owner, color, archived, deleted_at, 2 as shared, last_modified FROM `*PREFIX*deck_boards` as boards ' .
+		$sql = 'SELECT boards.id, title, owner, color, archived, deleted_at, 2 as shared, last_modified, belongs_board_id FROM `*PREFIX*deck_boards` as boards ' .
 			'INNER JOIN `*PREFIX*deck_board_acl` as acl ON boards.id=acl.board_id WHERE owner != ? AND type=? AND (';
 		for ($i = 0, $iMax = count($circles); $i < $iMax; $i++) {
 			$sql .= 'acl.participant = ? ';
@@ -174,15 +175,15 @@ class BoardMapper extends DeckMapper implements IPermissionMapper {
 		return $entries;
 	}
 
-	public function findAll() {
-		$sql = 'SELECT id from *PREFIX*deck_boards;';
-		return $this->findEntities($sql);
+	public function findAll($parent = null) {
+		$sql = 'SELECT id from *PREFIX*deck_boards WHERE belongs_board_id = ?;';
+		return $this->findEntities($sql, [$parent]);
 	}
 
 	public function findToDelete() {
 		// add buffer of 5 min
 		$timeLimit = time() - (60 * 5);
-		$sql = 'SELECT id, title, owner, color, archived, deleted_at, last_modified FROM `*PREFIX*deck_boards` ' .
+		$sql = 'SELECT id, title, owner, color, archived, deleted_at, last_modified, belongs_board_id FROM `*PREFIX*deck_boards` ' .
 			'WHERE `deleted_at` > 0 AND `deleted_at` < ?';
 		return $this->findEntities($sql, [$timeLimit]);
 	}

@@ -107,4 +107,25 @@
 
          return $new_board;
      }
+
+     /**
+      * Filter: just return all entries where belongs_noard_id is null
+      *
+      * @return array
+      */
+     public function findAll() {
+         $entries = parent::findAll();
+         
+         $remove_entries = [];
+         foreach( $entries as $key => $entry) {
+             if( !is_null($entry->getBelongsBoardId()) )
+                array_push($remove_entries, $key);
+         }
+
+         foreach( $remove_entries as $key => $value )
+            unset($entries[$value]);
+
+        return array_values($entries);
+     }
+
  }
