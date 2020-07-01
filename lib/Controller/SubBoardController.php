@@ -61,5 +61,16 @@ class SubBoardController extends BoardController {
     public function index($parent = null) {
         return $this->boardService->findAll();
     }
+
+    /**
+     * Return all objects by parent id
+     * 
+     * @NoAdminRequired
+     * @param integer $parent_id
+     * @return void
+     */
+    public function findByParent($parent_id) {
+        return $this->boardService->findByParent($parent_id);
+    }
     
 }

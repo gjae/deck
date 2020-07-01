@@ -346,6 +346,9 @@ export default new Vuex.Store({
 			const boards = await apiClient.loadBoards()
 			commit('setBoards', boards)
 		},
+		loadBoardsByParentId({commit}, board) {
+			return apiClient.loadBoardsByParentId(board.parentId);
+		},
 		loadSharees: debounce(function({ commit }, query) {
 			const params = new URLSearchParams()
 			if (typeof query === 'undefined') {

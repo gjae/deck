@@ -21,30 +21,30 @@
  *
  */
 
- namespace OCA\Deck\Service;
+namespace OCA\Deck\Service;
 
- use OCA\Deck\Activity\ActivityManager;
- use OCA\Deck\Activity\ChangeSet;
- use OCA\Deck\Db\Acl;
- use OCA\Deck\Db\AclMapper;
- use OCA\Deck\Db\AssignedUsersMapper;
- use OCA\Deck\Db\ChangeHelper;
- use OCA\Deck\Db\IPermissionMapper;
- use OCA\Deck\Db\Label;
- use OCA\Deck\Db\Stack;
- use OCA\Deck\Db\StackMapper;
- use OCA\Deck\NoPermissionException;
- use OCA\Deck\Notification\NotificationHelper;
- use OCP\AppFramework\Db\DoesNotExistException;
- use OCP\IGroupManager;
- use OCP\IL10N;
- use OCA\Deck\Db\Subboard;
- use OCA\Deck\Db\SubboardMapper;
- use OCA\Deck\Db\LabelMapper;
- use OCP\IUserManager;
- use OCA\Deck\BadRequestException;
- use Symfony\Component\EventDispatcher\EventDispatcherInterface;
- use Symfony\Component\EventDispatcher\GenericEvent;
+use OCA\Deck\Activity\ActivityManager;
+use OCA\Deck\Activity\ChangeSet;
+use OCA\Deck\Db\Acl;
+use OCA\Deck\Db\AclMapper;
+use OCA\Deck\Db\AssignedUsersMapper;
+use OCA\Deck\Db\ChangeHelper;
+use OCA\Deck\Db\IPermissionMapper;
+use OCA\Deck\Db\Label;
+use OCA\Deck\Db\Stack;
+use OCA\Deck\Db\StackMapper;
+use OCA\Deck\NoPermissionException;
+use OCA\Deck\Notification\NotificationHelper;
+use OCP\AppFramework\Db\DoesNotExistException;
+use OCP\IGroupManager;
+use OCP\IL10N;
+use OCA\Deck\Db\Subboard;
+use OCA\Deck\Db\SubboardMapper;
+use OCA\Deck\Db\LabelMapper;
+use OCP\IUserManager;
+use OCA\Deck\BadRequestException;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\GenericEvent;
 
  class SubBoardService extends BoardService
  {
@@ -116,14 +116,27 @@
      public function findAll() {
          $entries = parent::findAll();
          
-         $remove_entries = [];
-         foreach( $entries as $key => $entry) {
-             if( !is_null($entry->getBelongsBoardId()) )
-                array_push($remove_entries, $key);
-         }
+         $entries = array_filter($entries, function($item){
+            return is_null($item->getBelongsBoardId());
+         });
 
-         foreach( $remove_entries as $key => $value )
-            unset($entries[$value]);
+        return array_values($entries);
+     }
+
+     /**
+      * Filter boards by parent id
+      *
+      * @param integer $parent_id
+      * @return array
+      */
+     public function findByParent($parent_id) {
+
+        $entries = array_filter(
+            parent::findAll(),
+            function($item) use($parent_id){
+                return $item->getBelongsBoardId() == $parent_id;
+            }
+        );
 
         return array_values($entries);
      }

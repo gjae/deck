@@ -1,5 +1,6 @@
 /*
  * @copyright Copyright (c) 2018 Julius Härtl <jus@bitgrid.net>
+ * @copyright Copyright (c) 2020 Giovanny Avila <gjavilae@gmail.com>
  *
  * @author Julius Härtl <jus@bitgrid.net>
  *
@@ -29,6 +30,7 @@ import { generateFilePath } from '@nextcloud/router'
 import { showError } from '@nextcloud/dialogs'
 import { Tooltip } from '@nextcloud/vue'
 import ClickOutside from 'vue-click-outside'
+import VueCollapse from 'vue2-collapse'
 import './models'
 
 // the server snap.js conflicts with vertical scrolling so we disable it
@@ -62,6 +64,8 @@ Vue.config.errorHandler = (err, vm, info) => {
 	console.error(err)
 }
 
+
+Vue.use(VueCollapse)
 /* eslint-disable-next-line no-new */
 new Vue({
 	el: '#content',

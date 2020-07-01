@@ -45,6 +45,7 @@ return [
 
 		// subboard	
 		['name' => 'sub_board#create', 'url' => '/sub/boards', 'verb' => 'POST'],
+		['name' => 'sub_board#find_by_parent', 'url' => '/sub/boards/find-by-parent/{parent_id}', 'default' => ['parent_id' => 0]],
 
 		// stacks
 		['name' => 'stack#index', 'url' => '/stacks/{boardId}', 'verb' => 'GET'],

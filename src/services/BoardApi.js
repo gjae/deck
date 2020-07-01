@@ -130,6 +130,15 @@ export class BoardApi {
 			})
 	}
 
+	loadBoardsByParentId(parentId) {
+		return axios.get(this.url(`/sub/boards/find-by-parent/${parentId}`))
+			.then(
+				(response) => Promise.resolve(response.data),
+				(err) => Promise.reject(err)
+			)
+			.catch((err) => Promise.reject(err))
+	}
+
 	loadById(id) {
 		return axios.get(this.url(`/boards/${id}`))
 			.then(
