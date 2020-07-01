@@ -21,16 +21,17 @@
 -->
 
 <template>
-	<v-collapse-wrapper  ref="collapse_content" >
+	<v-collapse-wrapper  ref="collapse_content" class="bullet-area">
 		<router-link :id="`board-${board.id}`"
 			:title="board.title"
 			:to="routeTo"
 			class="board-list-row"
 			tag="div">
 
-			<div v-collapse-toggle @click.prevent.stop="toggleCollapse">
-				<div  v-if="!isFetching" class="board-list-bullet-cell">
-					<div :style="{ 'background-color': `#${board.color}` }" class="board-list-bullet" />
+			<div v-collapse-toggle @click.prevent.stop="toggleCollapse" >
+				<div  v-if="!isFetching" class="board-list-bullet-cell"  >
+					<div :style="{ 'background-color': `#${board.color}` }"  class="board-list-bullet bullet-color"/>
+					<div :class="{'icon-triangle-e': !bulletOpen, 'icon-triangle-s': bulletOpen, 'bullet-caret': true}" />
 				</div>
 				<div v-else-if="isFetching" style="text-align: center; margin-left: 22px;">
 					<div :class="{'icon-loading': isFetching}" />
@@ -88,13 +89,15 @@ export default {
 		return  {
 			collapseContent: false,
 			childBoards: [],
-			isFetching: false
+			isFetching: false,
+			bulletOpen: false
 		}
 	},
 	methods: {
 		toggleCollapse(e) {
 
 			this.collapseContent = !this.collapseContent
+			this.bulletOpen = !this.bulletOpen
 
 			// Only fetch if childBoards dont has items
 			if( this.collapseContent && this.childBoards.length == 0 ){ 
@@ -154,6 +157,21 @@ export default {
 
 	.sub-board-list {
 		padding-left: 17px;
+	}
+
+	.bullet-caret {
+		display: none;
+	}
+
+	.bullet-area:hover {
+		
+		.bullet-color {
+			display: none;
+		}
+
+		.bullet-caret {
+			display: block; 
+		}
 	}
 
 	.board-list-avatars-cell {
