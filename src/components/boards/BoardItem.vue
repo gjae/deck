@@ -29,8 +29,11 @@
 			tag="div">
 
 			<div v-collapse-toggle @click.prevent.stop="toggleCollapse">
-				<div class="board-list-bullet-cell">
+				<div  v-if="!isFetching" class="board-list-bullet-cell">
 					<div :style="{ 'background-color': `#${board.color}` }" class="board-list-bullet" />
+				</div>
+				<div v-else-if="isFetching" style="text-align: center; margin-left: 22px;">
+					<div :class="{'icon-loading': isFetching}" />
 				</div>
 			</div>
 
@@ -46,14 +49,10 @@
 					class="board-list-avatar" />
 				<div v-if="board.acl.length > 5" v-tooltip="otherAcl" class="avatardiv popovermenu-wrapper board-list-avatar icon-more" />
 			</div>
-			<strong class="icon-more"></strong>
 			<div class="board-list-actions-cell" />
 		</router-link>
 		<div class="content" v-collapse-content v-show="collapseContent">
-			<div class="board-list-row">
-				<div v-if="isFetching" style="text-align: center">
-					Cargando ...
-				</div>
+			<div style="align-items: center;">
 			</div>
 			<div  
 				v-show="canDisplayBoardChildren"  
@@ -96,14 +95,18 @@ export default {
 		toggleCollapse(e) {
 
 			this.collapseContent = !this.collapseContent
-			this.isFetching = true
-			this.$store.dispatch('loadBoardsByParentId', {parentId: this.board.id})
-				.then(
-					(boards) => {
-						this.childBoards = boards
-					}
-				)
-				.finally(()=> this.isFetching = false )
+
+			// Only fetch if childBoards dont has items
+			if( this.collapseContent && this.childBoards.length == 0 ){ 
+				this.isFetching = true
+				this.$store.dispatch('loadBoardsByParentId', {parentId: this.board.id})
+					.then(
+						(boards) => {
+							this.childBoards = boards
+						}
+					)
+					.finally(()=> this.isFetching = false )
+			}
 		}
 	},
 	computed: {
