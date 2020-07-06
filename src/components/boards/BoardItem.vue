@@ -28,7 +28,7 @@
 			class="board-list-row"
 			tag="div">
 
-			<div v-collapse-toggle @click.prevent.stop="toggleCollapse" >
+			<div v-show="!editing" v-collapse-toggle @click.prevent.stop="toggleCollapse" >
 				<div  v-if="!isFetching" class="board-list-bullet-cell"  >
 					<div :style="{ 'background-color': `#${board.color}` }"  class="board-list-bullet bullet-color"/>
 					<div :class="{'icon-triangle-e': !bulletOpen, 'icon-triangle-s': bulletOpen, 'bullet-caret': true}" />
@@ -38,10 +38,25 @@
 				</div>
 			</div>
 
-			<div class="board-list-title-cell">
-				{{ board.title }}
+			<div v-show="!editing"  class="board-list-title-cell">
+				{{ board.title }} <a href="#" @click.prevent.stop="activeEditItem" v-show="canManage" class="edit-button">- Editar</a>
 			</div>
-			<div class="board-list-avatars-cell" title="">
+		
+			<div v-show="editing" class="board-list-title-cell board-edit">
+				<ColorPicker class="app-navigation-entry-bullet-wrapper" :value="`#${board.color}`" @input="updateColor">
+					<div :style="{ backgroundColor: getColor }" class="color0 icon-colorpicker app-navigation-entry-bullet" />
+				</ColorPicker>
+				<form @submit.prevent.stop="applyEdit">
+					<input @keydown.esc="cancelEditing" v-model="editTitle" type="text" required>
+					<input type="submit" value="" class="icon-confirm">
+					<Actions>
+						<ActionButton 
+						icon="icon-close" 
+						@click.stop.prevent="cancelEditing" />
+					</Actions>
+				</form>
+			</div>
+			<div class="board-list-avatars-cell" title="" v-show="!editing">
 				<Avatar :user="board.owner.uid" :display-name="board.owner.displayname" class="board-list-avatar" />
 				<Avatar v-for="user in limitedAcl"
 					:key="user.id"
@@ -50,7 +65,7 @@
 					class="board-list-avatar" />
 				<div v-if="board.acl.length > 5" v-tooltip="otherAcl" class="avatardiv popovermenu-wrapper board-list-avatar icon-more" />
 			</div>
-			<div class="board-list-actions-cell" />
+			<div class="board-list-actions-cell"  v-show="!editing" />
 		</router-link>
 		<div class="content" v-collapse-content v-show="collapseContent">
 			<div style="align-items: center;">
@@ -66,12 +81,19 @@
 </template>
 
 <script>
-import { Avatar } from '@nextcloud/vue'
+import { Avatar,  ColorPicker, Actions, ActionButton } from '@nextcloud/vue'
+import ClickOutside from 'vue-click-outside'
 
 export default {
 	name: 'BoardItem',
 	components: {
 		Avatar,
+		ColorPicker,
+		Actions,
+		ActionButton,
+	},
+	directives: {
+		ClickOutside,
 	},
 	props: {
 		board: {
@@ -90,7 +112,10 @@ export default {
 			collapseContent: false,
 			childBoards: [],
 			isFetching: false,
-			bulletOpen: false
+			bulletOpen: false,
+			editing: false,
+			editTitle: '',
+			editColor: '',
 		}
 	},
 	methods: {
@@ -110,7 +135,33 @@ export default {
 					)
 					.finally(()=> this.isFetching = false )
 			}
-		}
+		},
+		activeEditItem(e) {
+			this.editTitle = this.board.title
+			this.editColor = '#' + this.board.color
+			this.editing = true
+		},
+		cancelEditing(e) {
+			this.editTitle = this.board.title
+			this.editColor = '#' + this.board.color
+			this.editing = false
+		},
+		updateColor(newColor) {
+			this.editColor = newColor
+		},
+		applyEdit(e) {
+			this.editing = false
+			if (this.editTitle || this.editColor) {
+				this.loading = true
+				const copy = JSON.parse(JSON.stringify(this.board))
+				copy.title = this.editTitle
+				copy.color = (typeof this.editColor.hex !== 'undefined' ? this.editColor.hex : this.editColor).substring(1)
+				this.$store.dispatch('updateBoard', copy)
+					.then(() => {
+						this.loading = false
+					})
+			}
+		},
 	},
 	computed: {
 		routeTo: function() {
@@ -128,12 +179,21 @@ export default {
 		canDisplayBoardChildren() {
 			return !this.isFetching && this.childBoards.length > 0 
 		},
+		canManage() {
+			return this.board.permissions.PERMISSION_MANAGE
+		},
 		currentPaddingLevel() {
 			return this.boardLevel * this.paddingIdentend
 		},
 		nextPaddingLevel() {
 			return this.boardLevel + 1
-		}
+		},
+		getColor() {
+			if (this.editColor !== '') {
+				return this.editColor
+			}
+			return this.board.color
+		},
 	},
 }
 </script>
@@ -163,6 +223,10 @@ export default {
 		display: none;
 	}
 
+	.edit-button {
+		display: none;
+	}
+
 	.bullet-area:hover {
 		
 		.bullet-color {
@@ -171,6 +235,10 @@ export default {
 
 		.bullet-caret {
 			display: block; 
+		}
+
+		.edit-button {
+			display: inline;
 		}
 	}
 
@@ -189,4 +257,32 @@ export default {
 		}
 	}
 
+	.board-edit {
+		margin-left: 44px;
+		order: 1;
+		display: flex;
+		height: 44px;
+
+		form {
+			display: flex;
+			flex-grow: 1;
+
+			input[type="text"] {
+				flex-grow: 1;
+			}
+		}
+	}
+
+	.app-navigation-entry-bullet-wrapper {
+		width: 44px;
+		height: 44px;
+		.color0 {
+			width: 30px !important;
+			margin: 5px;
+			margin-left: 7px;
+			height: 30px;
+			border-radius: 50%;
+			background-size: 14px;
+		}
+	}
 </style>
