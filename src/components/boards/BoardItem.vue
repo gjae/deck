@@ -40,7 +40,10 @@
 			<div
 				v-show="!editing"  
 				class="board-list-title-cell"
-				@click="navigateClick(routeTo)">
+				@click="navigateClick(routeTo)"
+				:style="{
+					textDecoration: deleting ?'line-through': 'none'
+				}">
 				{{ boardTitle }}
 			</div>
 		
@@ -91,6 +94,9 @@
 						icon="icon-add"
 						@click="actionNewSubboard">
 						{{  t('deck', 'Add new sub-board')  }}
+					</ActionButton>
+					<ActionButton icon="icon-more" :close-after-click="true" @click="actionDetails">
+						{{ t('deck', 'Board details') }}
 					</ActionButton>
 				</Actions>
 			</div>
@@ -172,7 +178,8 @@ export default {
 			boardColor: '',
 			boardTitle: '',
 			enableNewSubboardForm: false,
-			newSubboardName: ''
+			newSubboardName: '',
+			deleting: false,
 		}
 	},
 	methods: {
@@ -229,6 +236,11 @@ export default {
 				this.$router.push(routeTo)
 			}
 		},
+		actionDetails() {
+			const route = this.routeTo
+			route.name = 'board.details'
+			this.$router.push(route)
+		},
 		actionDelete() {
 			OC.dialogs.confirmDestructive(
 				t('deck', 'Are you sure you want to delete the board {title}? This will delete all the data of this board.', { title: this.board.title }),
@@ -241,6 +253,7 @@ export default {
 				},
 				(result) => {
 					if (result) {
+						this.deleting = true;
 						this.loading = true
 						this.boardApi.deleteBoard(this.board)
 							.then(() => {
