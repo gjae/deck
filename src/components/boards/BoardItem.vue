@@ -95,6 +95,18 @@
 						@click="actionNewSubboard">
 						{{  t('deck', 'Add new sub-board')  }}
 					</ActionButton>
+					<ActionButton v-if="canManage && board.archived && board.belongsBoardId == null"
+						icon="icon-archive"
+						:close-after-click="true"
+						@click="actionUnarchive">
+						{{ t('deck', 'Unarchive board ') }}
+					</ActionButton>
+					<ActionButton v-if="canManage && !board.archived  && board.belongsBoardId == null"
+						icon="icon-archive"
+						:close-after-click="true"
+						@click="actionArchive">
+						{{ t('deck', 'Archive board ') }}
+					</ActionButton>
 					<ActionButton icon="icon-more" :close-after-click="true" @click="actionDetails">
 						{{ t('deck', 'Board details') }}
 					</ActionButton>
@@ -240,6 +252,14 @@ export default {
 			const route = this.routeTo
 			route.name = 'board.details'
 			this.$router.push(route)
+		},
+		actionArchive() {
+			this.loading = true
+			this.$store.dispatch('archiveBoard', this.board)
+		},
+		actionUnarchive() {
+			this.loading = true
+			this.$store.dispatch('unarchiveBoard', this.board)
 		},
 		actionDelete() {
 			OC.dialogs.confirmDestructive(

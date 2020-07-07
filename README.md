@@ -1,7 +1,10 @@
-# Deck
+# Deck Plus
 
 [![Build Status](https://travis-ci.org/nextcloud/deck.svg?branch=master)](https://travis-ci.org/nextcloud/deck) [![CodeCov](https://codecov.io/github/nextcloud/deck/coverage.svg?branch=master)](https://codecov.io/github/nextcloud/deck) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/e403f723f42a4abd93b2cfe36cbd7eee)](https://www.codacy.com/app/juliushaertl/deck?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=nextcloud/deck&amp;utm_campaign=Badge_Grade) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/nextcloud/deck/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/nextcloud/deck/?branch=master) [![#nextcloud-deck](https://img.shields.io/badge/IRC-%23nextcloud--deck%20on%20freenode-blue.svg)](https://webchat.freenode.net/?channels=nextcloud-deck)
 
+> This fork and version is sponsored by the General Directorate of Social Development of the Bolivarian Mayor's Office in Maracaibo, Venezuela.
+
+> Original author Julius Härtl
 
 Deck is a kanban style organization tool aimed at personal planning and project organization for teams integrated with Nextcloud.
 
