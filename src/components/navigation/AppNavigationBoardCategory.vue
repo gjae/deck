@@ -26,7 +26,7 @@
 		:to="to"
 		:allow-collapse="collapsible"
 		:open="opened">
-		<AppNavigationBoard v-for="board in boardsSorted" :key="board.id" :board="board" />
+		<AppNavigationBoard v-for="board in boardsSorted" v-if="board.belongs_board_id == null" :key="board.id" :board="board" />
 	</AppNavigationItem>
 </template>
 

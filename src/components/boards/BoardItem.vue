@@ -22,15 +22,14 @@
 
 <template>
 	<v-collapse-wrapper  ref="collapse_content" class="bullet-area">
-		<router-link :id="`board-${board.id}`"
+		<div :id="`board-${board.id}`"
 			:title="board.title"
-			:to="routeTo"
 			class="board-list-row"
 			tag="div">
 
-			<div v-show="!editing" v-collapse-toggle @click.prevent.stop="toggleCollapse" >
-				<div  v-if="!isFetching" class="board-list-bullet-cell"  >
-					<div :style="{ 'background-color': `#${board.color}` }"  class="board-list-bullet bullet-color"/>
+			<div v-show="!editing" v-collapse-toggle >
+				<div  v-if="!isFetching" class="board-list-bullet-cell"  @click.prevent.stop="toggleCollapse" >
+					<div :style="{ 'background-color': getColor }"  class="board-list-bullet bullet-color"/>
 					<div :class="{'icon-triangle-e': !bulletOpen, 'icon-triangle-s': bulletOpen, 'bullet-caret': true}" />
 				</div>
 				<div v-else-if="isFetching" style="text-align: center; margin-left: 22px;">
@@ -38,8 +37,11 @@
 				</div>
 			</div>
 
-			<div v-show="!editing"  class="board-list-title-cell">
-				{{ board.title }} <a href="#" @click.prevent.stop="activeEditItem" v-show="canManage" class="edit-button">- Editar</a>
+			<div
+				v-show="!editing"  
+				class="board-list-title-cell"
+				@click="navigateClick(routeTo)">
+				{{ boardTitle }} <a href="#" @click.prevent.stop="activeEditItem" v-show="canManage" class="edit-button" style="max-width: 100px;">- Editar</a>
 			</div>
 		
 			<div v-show="editing" class="board-list-title-cell board-edit">
@@ -66,7 +68,7 @@
 				<div v-if="board.acl.length > 5" v-tooltip="otherAcl" class="avatardiv popovermenu-wrapper board-list-avatar icon-more" />
 			</div>
 			<div class="board-list-actions-cell"  v-show="!editing" />
-		</router-link>
+		</div>
 		<div class="content" v-collapse-content v-show="collapseContent">
 			<div style="align-items: center;">
 			</div>
@@ -116,6 +118,9 @@ export default {
 			editing: false,
 			editTitle: '',
 			editColor: '',
+			// DATOS DEL BOARD
+			boardColor: '',
+			boardTitle: ''
 		}
 	},
 	methods: {
@@ -142,12 +147,13 @@ export default {
 			this.editing = true
 		},
 		cancelEditing(e) {
-			this.editTitle = this.board.title
-			this.editColor = '#' + this.board.color
+			this.editTitle = this.boardTitle
+			this.editColor = this.board.color
 			this.editing = false
 		},
 		updateColor(newColor) {
 			this.editColor = newColor
+			this.boardColor= newColor
 		},
 		applyEdit(e) {
 			this.editing = false
@@ -156,14 +162,31 @@ export default {
 				const copy = JSON.parse(JSON.stringify(this.board))
 				copy.title = this.editTitle
 				copy.color = (typeof this.editColor.hex !== 'undefined' ? this.editColor.hex : this.editColor).substring(1)
+				copy.belongs_board_id = this.board.BelongsBoardId
 				this.$store.dispatch('updateBoard', copy)
 					.then(() => {
-						this.loading = false
+						console.log("asdasdad")
+						this.boardTitle = this.editTitle
+						this.boardColor = this.boardColor
 					})
+					.catch(()=> {
+						this.boardTitle = this.board.title
+						this.boardColor = '#'+this.board.color
+					})
+					.finally(()=> this.loading = false)
 			}
 		},
+		navigateClick(routeTo) {
+			if( !this.editing ){
+				this.$router.push(routeTo)
+			}
+		}
 	},
-	computed: {
+	mounted() {
+		this.boardTitle = this.board.title
+		this.boardColor = '#'+this.board.color
+	},
+ 	computed: {
 		routeTo: function() {
 			return {
 				name: 'board',
@@ -189,10 +212,7 @@ export default {
 			return this.boardLevel + 1
 		},
 		getColor() {
-			if (this.editColor !== '') {
-				return this.editColor
-			}
-			return this.board.color
+			return this.boardColor
 		},
 	},
 }

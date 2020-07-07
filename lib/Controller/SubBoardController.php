@@ -72,5 +72,18 @@ class SubBoardController extends BoardController {
     public function findByParent($parent_id) {
         return $this->boardService->findByParent($parent_id);
     }
+
+	/**
+	 * @NoAdminRequired
+	 * @param $id
+	 * @param $title
+	 * @param $color
+	 * @param $archived
+     * @param $belongsBoardId
+	 * @return \OCP\AppFramework\Db\Entity
+	 */
+	public function update($id, $title, $color, $archived, $belongsBoardId = null) {
+		return $this->boardService->update($id, $title, $color, $archived, $belongsBoardId);
+	}
     
 }

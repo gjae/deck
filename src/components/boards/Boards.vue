@@ -36,7 +36,7 @@
 				</div>
 				<div class="board-list-actions-cell" />
 			</div>
-			<BoardItem v-for="board in boardsSorted" :key="board.id" :board="board" />
+			<BoardItem v-for="board in boardsSorted" v-if="board.belongs_board_id == null" :key="board.id" :board="board" />
 		</div>
 	</div>
 </template>

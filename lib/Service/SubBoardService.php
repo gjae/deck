@@ -141,4 +141,26 @@ use Symfony\Component\EventDispatcher\GenericEvent;
         return array_values($entries);
      }
 
+	/**
+	 * @param $id
+	 * @param $title
+	 * @param $color
+	 * @param $archived
+     * @param $parentId
+	 * @return \OCP\AppFramework\Db\Entity
+	 * @throws DoesNotExistException
+	 * @throws \OCA\Deck\NoPermissionException
+	 * @throws \OCP\AppFramework\Db\MultipleObjectsReturnedException
+	 * @throws BadRequestException
+	 */
+	public function update($id, $title, $color, $archived, $parentId) {
+        
+        $board = parent::update($id, $title, $color, $archived);
+        if( !is_null($parentId) ){
+            $board->setbelongs_board_id($parentId);
+            $this->boardMapper->update($board);
+        }
+
+        return $board;
+    }
  }
