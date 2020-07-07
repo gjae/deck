@@ -103,6 +103,8 @@ use Symfony\Component\EventDispatcher\GenericEvent;
              $board = $this->boardMapper->find( $new_board->getId() );
              $board->setbelongs_board_id($parent);
              $this->boardMapper->update($board);
+
+             return $board;
          }
 
          return $new_board;
@@ -113,12 +115,13 @@ use Symfony\Component\EventDispatcher\GenericEvent;
       *
       * @return array
       */
-     public function findAll() {
+     public function findAll($only_parents = true) {
          $entries = parent::findAll();
          
-         $entries = array_filter($entries, function($item){
-            return is_null($item->getBelongsBoardId());
-         });
+         if( $only_parents )
+            $entries = array_filter($entries, function($item){
+                return is_null($item->getBelongsBoardId());
+            });
 
         return array_values($entries);
      }
@@ -134,7 +137,7 @@ use Symfony\Component\EventDispatcher\GenericEvent;
         $entries = array_filter(
             parent::findAll(),
             function($item) use($parent_id){
-                return $item->getBelongsBoardId() == $parent_id;
+                return $item->getBelongsBoardId() == $parent_id && $item->getDeletedAt() == 0;
             }
         );
 

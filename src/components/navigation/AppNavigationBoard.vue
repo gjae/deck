@@ -239,7 +239,6 @@ export default {
 		},
 		actionNewSubboard(board_id = null)	{
 			this.enableNewSubboardForm = true;
-			console.log("Enable subboard");
 		},
 		actionDetails() {
 			const route = this.routeTo

@@ -41,7 +41,7 @@
 				v-show="!editing"  
 				class="board-list-title-cell"
 				@click="navigateClick(routeTo)">
-				{{ boardTitle }} <a href="#" @click.prevent.stop="activeEditItem" v-show="canManage" class="edit-button" style="max-width: 100px;">- Editar</a>
+				{{ boardTitle }}
 			</div>
 		
 			<div v-show="editing" class="board-list-title-cell board-edit">
@@ -67,7 +67,54 @@
 					class="board-list-avatar" />
 				<div v-if="board.acl.length > 5" v-tooltip="otherAcl" class="avatardiv popovermenu-wrapper board-list-avatar icon-more" />
 			</div>
-			<div class="board-list-actions-cell"  v-show="!editing" />
+			<div class="board-list-actions-cell"  v-show="!editing" >
+				<Actions>
+					<ActionButton
+						icon="icon-rename"
+						 @click.prevent.stop="activeEditItem" 
+						 v-show="canManage"
+						:close-after-click="true"
+					>
+						{{ t('deck', 'Edit board ') }}
+					</ActionButton>
+					<ActionButton
+						icon="icon-delete"
+						v-show="canManage"
+						:close-after-click="true"
+						@click="actionDelete"
+					>
+						{{ t('deck', 'Delete board ') }}
+					</ActionButton>
+					<ActionButton
+						v-if="canManage"
+						:close-after-click="true"
+						icon="icon-add"
+						@click="actionNewSubboard">
+						{{  t('deck', 'Add new sub-board')  }}
+					</ActionButton>
+				</Actions>
+			</div>
+		</div>
+		<div
+			:close-after-submit="true"
+			v-show="enableNewSubboardForm"
+			class="board-edit"
+			:style="{
+				marginLeft: 65,
+			}"
+		>
+			<form @submit.prevent.stop="saveSubboard">
+				<input 
+					v-model="newSubboardName"  
+					:placeholder="t('deck', 'New board title')" 
+					type="text" required />
+				<input type="submit" value="" class="icon-confirm">
+				<Actions>
+					<ActionButton 
+						icon="icon-close" 
+						@click.stop.prevent="cancelAddNewSubboard" />
+					</Actions>
+			</form>
 		</div>
 		<div class="content" v-collapse-content v-show="collapseContent">
 			<div style="align-items: center;">
@@ -76,7 +123,7 @@
 				v-show="canDisplayBoardChildren"  
 				v-for="board in childBoards" :key="board.id" 
 				class="sub-board-list">
-				<BoardItem :board="board" :boardLevel="nextPaddingLevel" />
+				<BoardItem :onSubboardDelete="removeBoard" :board="board" :boardLevel="nextPaddingLevel" />
 			</div>
 		</div>
 	</v-collapse-wrapper>
@@ -108,6 +155,9 @@ export default {
 		boardLevel : {
 			default: 0
 		},
+		onSubboardDelete: {
+			default: null
+		}
 	},
 	data() {
 		return  {
@@ -120,15 +170,14 @@ export default {
 			editColor: '',
 			// DATOS DEL BOARD
 			boardColor: '',
-			boardTitle: ''
+			boardTitle: '',
+			enableNewSubboardForm: false,
+			newSubboardName: ''
 		}
 	},
 	methods: {
 		toggleCollapse(e) {
-
-			this.collapseContent = !this.collapseContent
-			this.bulletOpen = !this.bulletOpen
-
+			this.onBullet()
 			// Only fetch if childBoards dont has items
 			if( this.collapseContent && this.childBoards.length == 0 ){ 
 				this.isFetching = true
@@ -165,7 +214,6 @@ export default {
 				copy.belongs_board_id = this.board.BelongsBoardId
 				this.$store.dispatch('updateBoard', copy)
 					.then(() => {
-						console.log("asdasdad")
 						this.boardTitle = this.editTitle
 						this.boardColor = this.boardColor
 					})
@@ -179,6 +227,65 @@ export default {
 		navigateClick(routeTo) {
 			if( !this.editing ){
 				this.$router.push(routeTo)
+			}
+		},
+		actionDelete() {
+			OC.dialogs.confirmDestructive(
+				t('deck', 'Are you sure you want to delete the board {title}? This will delete all the data of this board.', { title: this.board.title }),
+				t('deck', 'Delete the board?'),
+				{
+					type: OC.dialogs.YES_NO_BUTTONS,
+					confirm: t('deck', 'Delete'),
+					confirmClasses: 'error',
+					cancel: t('deck', 'Cancel'),
+				},
+				(result) => {
+					if (result) {
+						this.loading = true
+						this.boardApi.deleteBoard(this.board)
+							.then(() => {
+								this.loading = false
+								this.deleted = true
+								this.undoTimeoutHandle = setTimeout(() => {
+									this.$store.dispatch('removeBoard', this.board)
+									if( this.onSubboardDelete != null)
+										this.onSubboardDelete(this.board)
+								}, 1000)
+							})
+					}
+				},
+				true
+			)
+		},
+		actionNewSubboard(board_id = null)	{
+			this.enableNewSubboardForm = true;
+			this.onBullet()
+		},
+		cancelAddNewSubboard(e){
+			this.enableNewSubboardForm = false
+			this.newSubboardName = ''
+			this.onBullet()
+		},
+		onBullet() {
+
+			this.collapseContent = !this.collapseContent
+			this.bulletOpen = !this.bulletOpen
+		},
+		saveSubboard(e){
+			this.$store.dispatch('createSubBoard', {
+				title: this.newSubboardName,
+				color: '000000',
+				parent: this.board.id
+			}).then( (board)=> {
+				this.toggleCollapse()
+			} )
+			this.cancelAddNewSubboard()
+		},
+		removeBoard(board) {
+			console.log("REMOVEING BOARD", board, this.board)
+			if( board.belongs_board_id == this.board.id || board.belongsBoardId == this.board.id  )
+			{
+				this.childBoards = this.childBoards.filter( (item)=> item.id != board.id )
 			}
 		}
 	},
@@ -215,6 +322,9 @@ export default {
 			return this.boardColor
 		},
 	},
+	inject: [
+		'boardApi',
+	],
 }
 </script>
 
